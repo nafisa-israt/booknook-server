@@ -137,7 +137,8 @@ async function run() {
     });
 
     // POST new book - Protected
-    app.post("/books", verifyToken, async (req, res) => {    try {
+    app.post("/books", verifyToken, async (req, res) => {
+try {
 const { title, author, category, description, image } = req.body;
 const allowedCategories = [
   "Fiction",
@@ -342,7 +343,6 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
         });
       }
     });
-
     // POST borrow book - Protected
     app.post("/borrows", verifyToken, async (req, res) => {
       try {
@@ -352,10 +352,13 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
           !bookId ||
           !ObjectId.isValid(bookId) ||
           !borrowDate ||
-          !returnDate
+          !returnDate ||
+          Number.isNaN(Date.parse(borrowDate)) ||
+          Number.isNaN(Date.parse(returnDate)) ||
+          new Date(returnDate) <= new Date(borrowDate)
         ) {
           return res.status(400).send({
-            message: "Valid borrow information is required",
+            message: "Valid book ID, borrow date and future return date are required",
           });
         }
 
@@ -381,7 +384,6 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
           });
         }
 
-        // Decrease available copies atomically
         const updateResult = await booksCollection.updateOne(
           {
             _id: new ObjectId(bookId),
@@ -402,13 +404,10 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
           bookId,
           bookTitle: book.title,
           bookImage: book.image,
-
           userEmail: req.user.email,
           userId: req.user.id,
-
           borrowDate,
           returnDate,
-
           status: "borrowed",
           createdAt: new Date(),
         };
@@ -421,7 +420,6 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
             insertedId: result.insertedId,
           });
         } catch (error) {
-          // Restore copy if borrow record insertion fails
           await booksCollection.updateOne(
             { _id: new ObjectId(bookId) },
             { $inc: { availableCopies: 1 } }
@@ -438,23 +436,6 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
       }
     });
 
-    // GET my borrowed books - Protected
-    app.get("/borrows", verifyToken, async (req, res) => {
-      try {
-        const borrows = await borrowsCollection
-          .find({
-            userEmail: req.user.email,
-            status: "borrowed",
-          })
-          .toArray();
-
-        res.send(borrows);
-      } catch (error) {
-        res.status(500).send({
-          message: "Failed to fetch borrowed books",
-        });
-      }
-    });
 
     // RETURN borrowed book - Owner only
     app.delete("/borrows/:id", verifyToken, async (req, res) => {
