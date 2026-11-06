@@ -90,6 +90,7 @@ async function run() {
     app.locals.db = db;
 
     // GET all books - Public
+    // GET all books - Public
     app.get("/books", async (req, res) => {
       try {
         const books = await booksCollection
@@ -99,8 +100,11 @@ async function run() {
 
         res.send(books);
       } catch (error) {
+        console.error("GET BOOKS ERROR:", error);
+
         res.status(500).send({
           message: "Failed to fetch books",
+          error: error.message,
         });
       }
     });
