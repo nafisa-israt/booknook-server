@@ -137,15 +137,35 @@ async function run() {
     });
 
     // POST new book - Protected
-    app.post("/books", verifyToken, async (req, res) => {
-      try {
-        const totalCopies = Number(req.body.totalCopies) || 1;
+    app.post("/books", verifyToken, async (req, res) => {    try {
+const { title, author, category, description, image } = req.body;
+const allowedCategories = [
+  "Fiction",
+  "Science",
+  "History",
+  "Kids",
+  "Others",
+];
 
-        if (totalCopies < 1) {
-          return res.status(400).send({
-            message: "Total copies must be at least 1",
-          });
-        }
+if (
+  !title?.trim() ||
+  !author?.trim() ||
+  !description?.trim() ||
+  !image?.trim() ||
+  !allowedCategories.includes(category)
+) {
+  return res.status(400).send({
+    message: "All book fields are required and category must be valid",
+  });
+}
+
+const totalCopies = Number(req.body.totalCopies);
+
+if (!Number.isInteger(totalCopies) || totalCopies < 1) {
+  return res.status(400).send({
+    message: "Total copies must be a positive integer",
+  });
+}
 
         const book = {
           title: req.body.title,
