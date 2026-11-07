@@ -1,92 +1,58 @@
-# BoiGhor - Server
+# BookNook – Backend API
 
-The backend server for **BoiGhor**, a book management and borrowing application. It provides RESTful APIs to manage books and borrowing records using Node.js, Express.js, and MongoDB.
+The backend server for **BookNook**, an online book management and borrowing platform. It provides REST APIs using Node.js, Express.js, and MongoDB.
 
-## Technologies Used
-
-- Node.js
-- Express.js
+## Technologies
+- Node.js and Express.js
 - MongoDB
-- JSON Web Token (JWT)
-- Better Auth
-- JOSE
+- Better Auth JWT and JOSE
+- CORS
 
 ## Features
-
-- RESTful API for managing books.
-- Add, update, retrieve, and delete books.
-- Retrieve individual book details.
-- Borrow books and manage borrowing records.
-- Return borrowed books.
-- Prevent duplicate borrowing of the same book.
-- Track total and available copies of books.
-- Prevent borrowing when no copies are available.
-- Protected API routes using JWT authentication.
-- User-specific book and borrowing records.
+- Public book listing and book details.
+- Authenticated create, update, and delete operations (book owner only).
+- Borrow and return operations.
+- Per-user borrowing history.
+- Available-copy tracking and duplicate active-borrow checks.
+- JWT verification using Better Auth's JWKS endpoint.
 
 ## API Endpoints
 
-### Books
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/books` | Get all books |
-| GET | `/books/:id` | Get a single book |
-| POST | `/books` | Add a new book |
-| PATCH | `/books/:id` | Update a book |
-| DELETE | `/books/:id` | Delete a book |
-
-### Borrows
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/borrows` | Borrow a book |
-| GET | `/borrows` | Get the logged-in user's borrowed books |
-| DELETE | `/borrows/:id` | Return a borrowed book |
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| GET | `/books` | Public | Get all books |
+| GET | `/books/:id` | Public | Get one book |
+| POST | `/books` | JWT | Add a book |
+| PATCH | `/books/:id` | JWT + owner | Update a book |
+| DELETE | `/books/:id` | JWT + owner | Delete a book |
+| POST | `/borrows` | JWT | Borrow a book |
+| GET | `/borrows` | JWT | Get the current user's borrow records |
+| DELETE | `/borrows/:id` | JWT + owner | Return a borrowed book |
 
 ## Environment Variables
 
-Create a `.env` file in the server root directory and configure the required environment variables:
+Create a `.env` file in the server root:
 
 ```env
 PORT=5000
 MONGODB_URI=your_mongodb_connection_string
+CLIENT_URL=https://your-deployed-client-domain.vercel.app
+BETTER_AUTH_URL=https://your-deployed-client-domain.vercel.app
+BETTER_AUTH_JWKS_URL=https://your-deployed-client-domain.vercel.app/api/auth/jwks
 ```
 
-Use your actual environment variable names and keep all credentials private.
+Set `CLIENT_URL` to the exact frontend origin allowed by CORS. The Better Auth URL and JWKS URL must point to the same deployed Better Auth application. Keep credentials private.
 
-## Installation and Setup
-
-1. Clone the repository:
+## Local Setup
 
 ```bash
 git clone https://github.com/nafisa-israt/booknook-server.git
-```
-
-2. Navigate to the project directory:
-
-```bash
 cd booknook-server
-```
-
-3. Install dependencies:
-
-```bash
 npm install
-```
-
-4. Configure the environment variables in your `.env` file.
-
-5. Start the development server:
-
-```bash
 npm run dev
 ```
 
-## Live Server
-
-https://booknook-server-bzvz.onrender.com
-
-## Related Repository
-
-[ BoiGhor Client Repository](https://github.com/nafisa-israt/booknook)
+## Deployment
+Live API: https://booknook-server-bzvz.onrender.com  
+Frontend: https://booknook-nafisa7.vercel.app/  
+Frontend repository: https://github.com/nafisa-israt/booknook
