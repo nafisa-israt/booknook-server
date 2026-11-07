@@ -1,5 +1,6 @@
 
 
+
 const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
@@ -90,7 +91,6 @@ async function run() {
     app.locals.db = db;
 
     // GET all books - Public
-    // GET all books - Public
     app.get("/books", async (req, res) => {
       try {
         const books = await booksCollection
@@ -138,35 +138,37 @@ async function run() {
 
     // POST new book - Protected
     app.post("/books", verifyToken, async (req, res) => {
-try {
-const { title, author, category, description, image } = req.body;
-const allowedCategories = [
-  "Fiction",
-  "Science",
-  "History",
-  "Kids",
-  "Others",
-];
+      try {
+        const { title, author, category, description, image } = req.body;
 
-if (
-  !title?.trim() ||
-  !author?.trim() ||
-  !description?.trim() ||
-  !image?.trim() ||
-  !allowedCategories.includes(category)
-) {
-  return res.status(400).send({
-    message: "All book fields are required and category must be valid",
-  });
-}
+        const allowedCategories = [
+          "Fiction",
+          "Science",
+          "History",
+          "Kids",
+          "Others",
+        ];
 
-const totalCopies = Number(req.body.totalCopies);
+        if (
+          !title?.trim() ||
+          !author?.trim() ||
+          !description?.trim() ||
+          !image?.trim() ||
+          !allowedCategories.includes(category)
+        ) {
+          return res.status(400).send({
+            message:
+              "All book fields are required and category must be valid",
+          });
+        }
 
-if (!Number.isInteger(totalCopies) || totalCopies < 1) {
-  return res.status(400).send({
-    message: "Total copies must be a positive integer",
-  });
-}
+        const totalCopies = Number(req.body.totalCopies);
+
+        if (!Number.isInteger(totalCopies) || totalCopies < 1) {
+          return res.status(400).send({
+            message: "Total copies must be a positive integer",
+          });
+        }
 
         const book = {
           title: req.body.title,
@@ -343,6 +345,25 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
         });
       }
     });
+
+    // GET my borrowed books - Protected
+    app.get("/borrows", verifyToken, async (req, res) => {
+      try {
+        const borrows = await borrowsCollection
+          .find({ userEmail: req.user.email })
+          .sort({ createdAt: -1 })
+          .toArray();
+
+        res.send(borrows);
+      } catch (error) {
+        console.error("GET BORROWS ERROR:", error);
+
+        res.status(500).send({
+          message: "Failed to fetch borrow books",
+        });
+      }
+    });
+
     // POST borrow book - Protected
     app.post("/borrows", verifyToken, async (req, res) => {
       try {
@@ -358,7 +379,8 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
           new Date(returnDate) <= new Date(borrowDate)
         ) {
           return res.status(400).send({
-            message: "Valid book ID, borrow date and future return date are required",
+            message:
+              "Valid book ID, borrow date and future return date are required",
           });
         }
 
@@ -435,7 +457,6 @@ if (!Number.isInteger(totalCopies) || totalCopies < 1) {
         });
       }
     });
-
 
     // RETURN borrowed book - Owner only
     app.delete("/borrows/:id", verifyToken, async (req, res) => {
