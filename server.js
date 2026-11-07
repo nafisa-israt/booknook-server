@@ -524,13 +524,13 @@ async function run() {
 
     // Home route
     app.get("/", (req, res) => {
-      res.send("BoiGhor Server is Running!");
+      res.send("BookNook Server is Running!");
     });
 
     const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
-      console.log(`BoiGhor Server running on port ${PORT}`);
+      console.log(`BookNook Server running on port ${PORT}`);
     });
   } catch (error) {
     console.error("MongoDB Connection Error:", error);
